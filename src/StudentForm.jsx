@@ -1,56 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-const StudentForm = ({ addStudent, updateStu, editingStu }) => {
-  const [student, setStudent] = useState({
-    name: '',
-    age: '',
-    grade: 'A',
-    status: 'active',
-  });
-
-  useEffect(() => {
-    if (editingStu) {
-      setStudent(editingStu);
-    }
-  }, [editingStu]);
-
-  const SubmitHandle = (e) => {
-    e.preventDefault();
-    if (editingStu) {
-      updateStu(student);
-    } else {
-      addStudent(student);
-    }
-    setStudent({ name: '', age: '', grade: 'A', status: 'active' });
-  };
-
+const StudentForm = ({ student, onChange, onSubmit, update }) => {
   return (
-    <form onSubmit={SubmitHandle} className="mb-4 bg-white p-4 rounded shadow-md">
-      <div className="mb-2">
+    <form onSubmit={onSubmit} className="mb-4">
+      <div className="mb-4">
+        <label className="block text-gray-700" htmlFor="name">Name</label>
         <input
           type="text"
+          name="name"
+          id="name"
           value={student.name}
-          onChange={(e) => setStudent({ ...student, name: e.target.value })}
-          placeholder="Enter Student Name"
-          className="border p-2 w-full rounded"
+          onChange={onChange}
           required
+          className="w-full p-2 border border-gray-300 rounded-md"
         />
       </div>
-      <div className="mb-2">
+      <div className="mb-4">
+        <label className="block text-gray-700" htmlFor="age">Age</label>
         <input
           type="number"
+          name="age"
+          id="age"
           value={student.age}
-          onChange={(e) => setStudent({ ...student, age: e.target.value })}
-          placeholder="Enter Age"
-          className="border p-2 w-full rounded"
+          onChange={onChange}
           required
+          className="w-full p-2 border border-gray-300 rounded-md"
         />
       </div>
-      <div className="mb-2">
+      <div className="mb-4">
+        <label className="block text-gray-700" htmlFor="grade">Grade</label>
         <select
+          name="grade"
+          id="grade"
           value={student.grade}
-          onChange={(e) => setStudent({ ...student, grade: e.target.value })}
-          className="border p-2 w-full rounded"
+          onChange={onChange}
+          className="w-full p-2 border border-gray-300 rounded-md"
         >
           <option value="A">A</option>
           <option value="B">B</option>
@@ -59,30 +43,27 @@ const StudentForm = ({ addStudent, updateStu, editingStu }) => {
           <option value="F">F</option>
         </select>
       </div>
-      <div className="mb-2">
-        <label className="flex items-center">
+      <div className="mb-4">
+        <label className="inline-flex items-center">
           <input
             type="checkbox"
-            checked={student.status === 'active'}
-            onChange={(e) =>
-              setStudent({
-                ...student,
-                status: e.target.checked ? 'active' : 'inactive',
-              })
-            }
+            name="enrollmentStatus"
+            checked={student.enrollmentStatus}
+            onChange={onChange}
             className="mr-2"
           />
-          Active
+          Enrolled
         </label>
       </div>
       <button
         type="submit"
-        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-700"
+        className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
       >
-        {editingStu ? 'Update Student' : 'Add Student'}
+        {update ? 'Update Student' : 'Add Student'}
       </button>
     </form>
   );
 };
 
 export default StudentForm;
+

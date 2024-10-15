@@ -2,62 +2,120 @@ import React, { useState, useEffect } from 'react';
 import StudentForm from './StudentForm';
 import StudentTable from './StudentTable';
 import SearchFilter from './SearchFilter';
+import './App.css';
 
 const App = () => {
-  const [students, setStudents] = useState([]);
+  const [student, setStudent] = useState([]);
+  const [studentData, setStudentData] = useState({
+    id: null,
+    name: '',
+    age: '',
+    grade: 'A',
+    enrollmentStatus: true,
+  });
+  const [update, setUpdate] = useState(false);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [editingStu, setEditingStu] = useState(null);
+  const [option, setOption] = useState('all');
+  const [sort, setSort] = useState('name');
 
   useEffect(() => {
-    const storedStudents = JSON.parse(localStorage.getItem('students'));
-    setStudents(storedStudents);
+    const storeData = JSON.parse(localStorage.getItem('student')) || [];
+    setStudent(storeData);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('students', JSON.stringify(students));
-  }, [students]);
+    localStorage.setItem('student', JSON.stringify(student));
+  }, [student]);
 
-  const addStudent = (student) => {
-    setStudents([...students, { ...student, id: Date.now() }]);
+  const inputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setStudentData({
+      ...studentData,
+      [name]: type === 'checkbox' ? checked : value,
+    });
   };
 
-  const updateStu = (updatedStudent) => {
-    const updatedStudents = students.map((s) =>
-      s.id === updatedStudent.id ? updatedStudent : s
-    );
-    setStudents(updatedStudents);
-    setEditingStu(null);
+  const submitBtn = (e) => {
+    e.preventDefault();
+    if (!studentData.name || !studentData.age) {
+      alert('Please provide valid data');
+      return;
+    }
+    if (update) {
+      setStudent(
+        student.map((student) =>
+          student.id === studentData.id ? studentData : student
+        )
+      );
+      setUpdate(false);
+    } else {
+      setStudent([...student, { ...studentData, id: Date.now() }]);
+    }
+    resetBtn();
   };
 
-  const deleteStu = (id) => {
-    setStudents(students.filter((student) => student.id !== id));
+  const resetBtn = () => {
+    setStudentData({
+      id: null,
+      name: '',
+      age: '',
+      grade: 'A',
+      enrollmentStatus: true,
+    });
   };
 
-  const filteredStu = students
+
+  const filteredData = student
     .filter((student) =>
       student.name.toLowerCase().includes(search.toLowerCase())
     )
-    .filter((student) =>
-      filterStatus === 'all' ? true : student.status === filterStatus
-    );
+    .filter((student) => {
+      if (option === 'all') return true;
+      return option === 'active'
+        ? student.enrollmentStatus
+        : !student.enrollmentStatus;
+    })
+    .sort((a, b) => {
+      if (sort === 'name') {
+        return a.name.localeCompare(b.name);
+      } else if (sort === 'age') {
+        return a.age - b.age;
+      } else if (sort === 'grade') {
+        return a.grade.localeCompare(b.grade);
+      }
+      return 0;
+    });
+    
+  const EditBtn = (student) => {
+    setStudentData(student);
+    setUpdate(true);
+  };
+
+  const deleteBtn = (id) => {
+    setStudent(student.filter((student) => student.id !== id));
+  };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4 text-center">Student Record Management</h1>
+    <div className="max-w-lg mx-auto my-12 p-5 sm:p-10 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold text-center mb-4">Student Record Management</h1>
       <StudentForm
-        addStudent={addStudent}
-        updateStu={updateStu}
-        editingStu={editingStu}
+        student={studentData}
+        onChange={inputChange}
+        onSubmit={submitBtn}
+        update={update}
       />
       <SearchFilter
+        search={search}
         setSearch={setSearch}
-        setFilterStatus={setFilterStatus}
+        option={option}
+        setOption={setOption}
+        sort={sort} 
+        setSort={setSort} 
       />
       <StudentTable
-        students={filteredStu}
-        deleteStu={deleteStu}
-        setEditingStu={setEditingStu}
+        student={filteredData}
+        onEdit={EditBtn}
+        onDelete={deleteBtn}
       />
     </div>
   );
